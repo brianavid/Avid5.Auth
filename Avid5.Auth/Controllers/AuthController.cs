@@ -16,11 +16,11 @@ namespace Avid5.Auth.Controllers
     public class AuthController : Controller
     {
         //  Your client Id
-        private const string ClientId = "7f47df26bc5f4d79abafc0b8396fe208";
-        //  Your client Secret. Replace with real secret before deploying
-        private const string ClientSecret = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+        private string ClientId = Config.ClientId ?? "";
+        //  Your client Secret
+        private string ClientSecret = Config.ClientSecret ?? "";
         //  The authentication service public URL which has been registered with Spotify
-        private const string RedirectUri = "http://brianavid.dnsalias.com:88/Auth";
+        private string RedirectUri = Config.RedirectUri ?? "";
 
         static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -61,31 +61,21 @@ namespace Avid5.Auth.Controllers
                 }
 
                 //  Tell Spotify the three pieces of information that it needs to identify this service
-                col.Add("redirect_uri", RedirectUri + "/Authenticate");
+                col.Add("redirect_uri", RedirectUri);
                 col.Add("client_id", ClientId);
                 col.Add("client_secret", ClientSecret);
 
                 String responseData = "";
-                try
+                //  Send the data to Spotify for processing and authentication
+                using (var request = new HttpRequestMessage(HttpMethod.Post, Config.SpotifyUrl ?? "https://accounts.spotify.com/api/token"))
                 {
-                    //  Send the data to Spotify for processing and authentication
-                    using (var request = new HttpRequestMessage(HttpMethod.Post, "https://accounts.spotify.com/api/token"))
+                    request.Headers.CacheControl = new CacheControlHeaderValue { NoCache = true };
+                    request.Content = new FormUrlEncodedContent(col);
+                    using (HttpResponseMessage response = httpClient.Send(request))
                     {
-                        request.Headers.CacheControl = new CacheControlHeaderValue { NoCache = true };
-                        request.Content = new FormUrlEncodedContent(col);
-                        using (HttpResponseMessage response = httpClient.Send(request))
-                        {
-                            response.EnsureSuccessStatusCode();
-                            responseData = Encoding.UTF8.GetString(response.Content.ReadAsByteArrayAsync().Result);
-                        }
+                        response.EnsureSuccessStatusCode();
+                        responseData = Encoding.UTF8.GetString(response.Content.ReadAsByteArrayAsync().Result);
                     }
-                }
-                catch (WebException e)
-                {
-                    // Not sure that this case is needed!!
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-                    responseData = new StreamReader(e.Response.GetResponseStream()).ReadToEnd();
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
                 }
 
                 //  The response from Spotify is a JSON-encoded structure
@@ -114,7 +104,7 @@ namespace Avid5.Auth.Controllers
         public ContentResult Probe()
         {
             logger.Info("Probe");
-            return this.Content(ClientSecret.StartsWith("X") ? "Bad Secret" : "OK");    // in case I forget!
+            return this.Content("OK");
         }
 
         //  Auth/Exit is not part of the protocol, but can be used to stop the service

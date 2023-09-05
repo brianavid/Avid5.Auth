@@ -30,7 +30,15 @@ app.MapControllerRoute(
 
 var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 
-AuthController.Initialize(app.Lifetime);
+if (args.Length > 0 && File.Exists(args[0]))
+{
+    Config.Initialize(args[0]);
+    AuthController.Initialize(app.Lifetime);
 
-logger.Info("Avid5 Auth Started");
-app.Run();
+    logger.Info("Avid5 Auth Started");
+    app.Run();
+}
+else
+{
+    logger.Info("Avid5 Auth missing config XML file argument");
+}
