@@ -9,7 +9,7 @@ Other methods used are:
 - /Auth/Probe, which is not part of the protocol, but can be used before authentication to confirm that the service is up and running.
 - /Auth/Exit, which is not part of the protocol, but can be used to stop the service.
 - /Auth/GetLastRefreshToken, which will return a "RefreshToken" that can be used thereafter to authenticate future sessions without any user interaction. The caller has two minutes to fetch the token after the /Auth/Authenticate call before the token is forgotten. The token returned has a limited lifetime. The client **MUST** save this token persistently for any future authenticaton without UI via /Auth/Refresh.
-- /Auth/Refresh will allocate a new RefreshToken from an old one, but with more lifetime. In this call and in GetLastRefreshToken, the refresh tokens are returned with theit lifetime in a JSON structure.
+- /Auth/Refresh will allocate a new RefreshToken from an old one, but with more lifetime. In this call and in GetLastRefreshToken, the refresh tokens are returned with their lifetime in a JSON structure.
 
 The program is a self-hosted (Kestrel) MVC web service. It requires a single argument which is a path to an XML config file:
 ```
