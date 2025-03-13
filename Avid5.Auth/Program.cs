@@ -40,5 +40,8 @@ if (args.Length > 0 && File.Exists(args[0]))
 }
 else
 {
-    logger.Info("Avid5 Auth missing config XML file argument");
+    if (args.Length > 0)
+        logger.Info($"Avid5 Auth missing config XML file '{args[0]}'");
+    else
+        logger.Info("Avid5 Auth missing config XML file argument");
 }
